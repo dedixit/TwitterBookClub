@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Club Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts (inline import) -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    </style>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #e0e7ff;
+            --bg: #f8fafc;
+            --section-bg: #f1f5f9;
+            --border: #e5e7eb;
+            --text: #1e293b;
+            --muted: #64748b;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(30,41,59,0.06);
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        #bookclub-app {
+            max-width: 800px;
+            margin: 32px auto;
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh;
+        }
+        header {
+            background: var(--primary);
+            color: #fff;
+            padding: 20px 24px 12px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.7rem;
+            font-weight: 600;
+            letter-spacing: -1px;
+        }
+        nav {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        nav button {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        nav button.active, nav button:hover {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 1px 4px rgba(59,130,246,0.08);
+        }
+        .admin-toggle {
+            margin-left: auto;
+            font-size: 0.95em;
+            color: #fff;
+            background: rgba(0,0,0,0.08);
+            border: none;
+            border-radius: var(--radius);
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+        main {
+            flex: 1;
+            padding: 24px;
+            background: var(--section-bg);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        section {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 0;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .book-list, .meeting-list, .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .book-item, .meeting-item, .review-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: var(--section-bg);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .book-item.current {
+            border: 2px solid var(--primary);
+            background: #e0e7ff;
+        }
+        .book-title {
+            font-weight: 600;
+            font-size: 1.05em;
+            margin-bottom: 2px;
+        }
+        .book-author {
+            color: var(--muted);
+            font-size: 0.97em;
+        }
+        .book-desc {
+            font-size: 0.97em;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+        .votes {
+            font-size: 0.97em;
+            color: var(--primary);
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        .vote-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 0.97em;
+            margin-right: 8px;
+            transition: background 0.15s;
+        }
+        .vote-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .current-badge {
+            background: var(--primary);
+            color: #fff;
+            border-radius: 6px;
+            font-size: 0.85em;
+            padding: 2px 8px;
+            margin-left: 8px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .set-current-btn {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 2px 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: background 0.15s;
+        }
+        .set-current-btn:hover {
+            background: var(--primary-light);
+        }
+        .add-form, .review-form, .meeting-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+            align-items: flex-end;
+        }
+        .add-form input, .add-form textarea,
+        .review-form input, .review-form textarea,
+        .meeting-form input {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1em;
+            background: var(--section-bg);
+            flex: 1 1 120px;
+            min-width: 0;
+        }
+        .add-form textarea, .review-form textarea {
+            resize: vertical;
+            min-height: 36px;
+            max-height: 80px;
+        }
+        .add-form button, .review-form button, .meeting-form button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 1em;
+        }
+        .add-form button:disabled, .review-form button:disabled, .meeting-form button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .drive-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0 0 0;
+        }
+        .drive-link a {
+            color: var(--primary);
+            text-decoration: underline;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        .edit-link-btn {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 2px 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: background 0.15s;
+        }
+        .edit-link-btn:hover {
+            background: var(--primary-light);
+        }
+        .progress-tracker {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 10px 0 0 0;
+            flex-wrap: wrap;
+        }
+        .progress-tracker label {
+            font-weight: 500;
+            margin-right: 6px;
+        }
+        .progress-tracker select {
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--section-bg);
+            font-size: 1em;
+        }
+        .review-list {
+            margin-top: 10px;
+        }
+        .review-item {
+            position: relative;
+            padding-right: 60px;
+        }
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.97em;
+            margin-bottom: 2px;
+        }
+        .review-rating {
+            color: #f59e42;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .review-date {
+            color: var(--muted);
+            font-size: 0.93em;
+            margin-left: auto;
+        }
+        .review-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 4px;
+        }
+        .review-actions button {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 2px 8px;
+            font-size: 0.93em;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .review-actions button:hover {
+            background: var(--primary-light);
+        }
+        .meeting-list {
+            margin-top: 10px;
+        }
+        .meeting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-right: 60px;
+            position: relative;
+        }
+        .meeting-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        .meeting-date {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .meeting-link a {
+            color: var(--primary);
+            text-decoration: underline;
+            font-size: 0.97em;
+            word-break: break-all;
+        }
+        .meeting-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 4px;
+        }
+        .meeting-actions button {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 2px 8px;
+            font-size: 0.93em;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .meeting-actions button:hover {
+            background: var(--primary-light);
+        }
+        .no-data {
+            color: var(--muted);
+            font-size: 1em;
+            margin: 12px 0;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 18px 0 10px 0;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            #bookclub-app {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            main {
+                padding: 10px;
+            }
+            section {
+                padding: 12px;
+            }
+            nav {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="bookclub-app">
+    <header>
+        <h1>📚 Book Club Portal</h1>
+        <nav>
+            <button data-tab="dashboard" class="active">Dashboard</button>
+            <button data-tab="voting">Book Voting</button>
+            <button data-tab="reviews">Reviews</button>
+            <button data-tab="schedule">Schedule</button>
+            <button class="admin-toggle" id="adminToggleBtn" title="Toggle admin mode">Admin: <span id="adminStatus">Off</span></button>
+        </nav>
+    </header>
+    <main id="main-content">
+        <!-- Dynamic content rendered here -->
+    </main>
+</div>
+<script>
+(function() {
+    // --- Utility Functions ---
+    function uuid() {
+        // Simple UUID using timestamp and random
+        return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2,8);
+    }
+    function save(key, value) {
+        localStorage.setItem('bc_' + key, JSON.stringify(value));
+    }
+    function load(key, fallback) {
+        let v = localStorage.getItem('bc_' + key);
+        if (v) try { return JSON.parse(v); } catch(e) {}
+        return fallback;
+    }
+    function nowLocale() {
+        return new Date().toLocaleString();
+    }
+    function escapeHTML(str) {
+        return (str||'').replace(/[&<>"']/g, function(m) {
+            return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+        });
+    }
+    function getCurrentBook(books) {
+        return books.find(b => b.isCurrent) || books[0];
+    }
+    function sortByDateDesc(arr, key) {
+        return arr.slice().sort((a,b) => new Date(b[key]) - new Date(a[key]));
+    }
+    // --- Demo Data Seeding ---
+    function seedDemoData() {
+        if (!load('books')) {
+            const demoBooks = [
+                {
+                    id: uuid(),
+                    title: "Atomic Habits",
+                    author: "James Clear",
+                    description: "An easy & proven way to build good habits & break bad ones.",
+                    votes: 4,
+                    driveUrl: "https://drive.google.com/demo-atomic-habits",
+                    isCurrent: true
+                },
+                {
+                    id: uuid(),
+                    title: "Educated",
+                    author: "Tara Westover",
+                    description: "A memoir about family, loss and the struggle for a better future.",
+                    votes: 2,
+                    driveUrl: "",
+                    isCurrent: false
+                },
+                {
+                    id: uuid(),
+                    title: "The Midnight Library",
+                    author: "Matt Haig",
+                    description: "A novel about all the choices that go into a life well lived.",
+                    votes: 3,
+                    driveUrl: "",
+                    isCurrent: false
+                }
+            ];
+            save('books', demoBooks);
+        }
+        if (!load('reviews')) {
+            const books = load('books', []);
+            const currentBook = getCurrentBook(books);
+            save('reviews', [
+                {
+                    id: uuid(),
+                    bookId: currentBook.id,
+                    userName: "Alice",
+                    rating: 5,
+                    comment: "Loved the practical tips!",
+                    date: nowLocale()
+                },
+                {
+                    id: uuid(),
+                    bookId: currentBook.id,
+                    userName: "Bob",
+                    rating: 4,
+                    comment: "Very insightful.",
+                    date: nowLocale()
+                }
+            ]);
+        }
+        if (!load('progress')) {
+            const books = load('books', []);
+            const currentBook = getCurrentBook(books);
+            save('progress', [
+                { userName: "Alice", bookId: currentBook.id, status: "Finished" },
+                { userName: "Bob", bookId: currentBook.id, status: "In Progress" }
+            ]);
+        }
+        if (!load('meetings')) {
+            const books = load('books', []);
+            const currentBook = getCurrentBook(books);
+            save('meetings', [
+                {
+                    id: uuid(),
+                    bookId: currentBook.id,
+                    date: new Date(Date.now() + 86400000 * 3).toISOString().slice(0,10),
+                    time: "19:00",
+                    link: "https://meet.google.com/demo-meeting"
+                },
+                {
+                    id: uuid(),
+                    bookId: currentBook.id,
+                    date: new Date(Date.now() + 86400000 * 10).toISOString().slice(0,10),
+                    time: "19:00",
+                    link: "https://meet.google.com/demo-meeting2"
+                }
+            ]);
+        }
+    }
+    // --- State ---
+    let state = {
+        tab: 'dashboard',
+        admin: false,
+        userName: '',
+        editingReviewId: null,
+        editingMeetingId: null
+    };
+    // --- User Name Prompt (per device) ---
+    function getUserName() {
+        let name = localStorage.getItem('bc_userName');
+        if (!name) {
+            name = prompt("Enter your name (for reviews/progress):", "");
+            if (!name) name = "Guest";
+            localStorage.setItem('bc_userName', name);
+        }
+        return name;
+    }
+    state.userName = getUserName();
+    // --- Data Access Layer (localStorage, can swap for API) ---
+    const Data = {
+        getBooks() { return load('books', []); },
+        saveBooks(books) { save('books', books); },
+        getReviews() { return load('reviews', []); },
+        saveReviews(reviews) { save('reviews', reviews); },
+        getProgress() { return load('progress', []); },
+        saveProgress(progress) { save('progress', progress); },
+        getMeetings() { return load('meetings', []); },
+        saveMeetings(meetings) { save('meetings', meetings); }
+    };
+    // --- Rendering ---
+    function render() {
+        const main = document.getElementById('main-content');
+        main.innerHTML = '';
+        switch(state.tab) {
+            case 'dashboard': renderDashboard(main); break;
+            case 'voting': renderVoting(main); break;
+            case 'reviews': renderReviews(main); break;
+            case 'schedule': renderSchedule(main); break;
+        }
+        // Update nav active
+        document.querySelectorAll('nav button[data-tab]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === state.tab);
+        });
+        // Update admin status
+        document.getElementById('adminStatus').textContent = state.admin ? 'On' : 'Off';
+    }
+    // --- Dashboard Tab ---
+    function renderDashboard(main) {
+        const books = Data.getBooks();
+        const currentBook = getCurrentBook(books);
+        const progress = Data.getProgress().filter(p => p.bookId === currentBook.id);
+        const meetings = Data.getMeetings().filter(m => m.bookId === currentBook.id);
+        // Section: Current Book
+        const secBook = document.createElement('section');
+        secBook.innerHTML = `
+            <h2>Current Book</h2>
+            <div class="book-item current">
+                <span class="book-title">${escapeHTML(currentBook.title)}</span>
+                <span class="book-author">by ${escapeHTML(currentBook.author)}</span>
+                ${currentBook.description ? `<span class="book-desc">${escapeHTML(currentBook.description)}</span>` : ''}
+            </div>
+            <div class="drive-link" id="driveLinkSec">
+                <span>📁 Materials:</span>
+                ${currentBook.driveUrl ? `<a href="${escapeHTML(currentBook.driveUrl)}" target="_blank">${escapeHTML(currentBook.driveUrl)}</a>` : '<span style="color:var(--muted)">No link set</span>'}
+                ${state.admin ? `<button class="edit-link-btn" id="editDriveBtn">Edit</button>` : ''}
+            </div>
+        `;
+        main.appendChild(secBook);
+        // Admin: Edit Drive Link
+        if (state.admin) {
+            secBook.querySelector('#editDriveBtn').onclick = function() {
+                let url = prompt("Enter Google Drive (or shared) URL for this book:", currentBook.driveUrl || "");
+                if (url !== null) {
+                    currentBook.driveUrl = url.trim();
+                    Data.saveBooks(books);
+                    render();
+                }
+            };
+        }
+        // Section: Reading Progress
+        const secProg = document.createElement('section');
+        secProg.innerHTML = `<h2>Reading Progress</h2>`;
+        // User's progress
+        let userProg = progress.find(p => p.userName === state.userName);
+        if (!userProg) userProg = { userName: state.userName, bookId: currentBook.id, status: "Not Started" };
+        const progDiv = document.createElement('div');
+        progDiv.className = 'progress-tracker';
+        progDiv.innerHTML = `
+            <label for="progressSelect">Your status:</label>
+            <select id="progressSelect">
+                <option${userProg.status==="Not Started"?" selected":""}>Not Started</option>
+                <option${userProg.status==="In Progress"?" selected":""}>In Progress</option>
+                <option${userProg.status==="Finished"?" selected":""}>Finished</option>
+            </select>
+        `;
+        progDiv.querySelector('#progressSelect').onchange = function() {
+            userProg.status = this.value;
+            let allProg = Data.getProgress();
+            let idx = allProg.findIndex(p => p.userName === state.userName && p.bookId === currentBook.id);
+            if (idx >= 0) allProg[idx] = userProg;
+            else allProg.push(userProg);
+            Data.saveProgress(allProg);
+            render();
+        };
+        secProg.appendChild(progDiv);
+        // Progress summary
+        const summary = {};
+        progress.forEach(p => { summary[p.status] = (summary[p.status]||0)+1; });
+        secProg.innerHTML += `
+            <div style="margin-top:10px;font-size:0.97em;color:var(--muted)">
+                <b>Group Progress:</b>
+                <span>Not Started: ${summary["Not Started"]||0}</span> |
+                <span>In Progress: ${summary["In Progress"]||0}</span> |
+                <span>Finished: ${summary["Finished"]||0}</span>
+            </div>
+        `;
+        secProg.appendChild(document.createElement('hr')).className = 'divider';
+        main.appendChild(secProg);
+        // Section: Upcoming Meetings
+        const secMeet = document.createElement('section');
+        secMeet.innerHTML = `<h2>Upcoming Meetings</h2>`;
+        const meetList = document.createElement('div');
+        meetList.className = 'meeting-list';
+        let upcoming = meetings.filter(m => new Date(m.date + 'T' + m.time) >= new Date());
+        if (upcoming.length === 0) {
+            meetList.innerHTML = `<div class="no-data">No upcoming meetings scheduled.</div>`;
+        } else {
+            sortByDateDesc(upcoming, 'date').reverse().forEach(m => {
+                meetList.innerHTML += `
+                    <div class="meeting-item">
+                        <div class="meeting-header">
+                            <span class="meeting-date">${escapeHTML(new Date(m.date + 'T' + m.time).toLocaleString())}</span>
+                        </div>
+                        <div class="meeting-link">
+                            <a href="${escapeHTML(m.link)}" target="_blank">${escapeHTML(m.link)}</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        secMeet.appendChild(meetList);
+        main.appendChild(secMeet);
+    }
+    // --- Book Voting Tab ---
+    function renderVoting(main) {
+        const books = Data.getBooks();
+        const currentBook = getCurrentBook(books);
+        // Book List
+        const sec = document.createElement('section');
+        sec.innerHTML = `<h2>Book Suggestions & Voting</h2>`;
+        const list = document.createElement('div');
+        list.className = 'book-list';
+        if (books.length === 0) {
+            list.innerHTML = `<div class="no-data">No books suggested yet.</div>`;
+        } else {
+            books.slice().sort((a,b) => b.votes - a.votes).forEach(b => {
+                const votedKey = 'bc_voted_' + b.id;
+                const voted = localStorage.getItem(votedKey) === '1';
+                list.innerHTML += `
+                    <div class="book-item${b.isCurrent?' current':''}">
+                        <span class="book-title">${escapeHTML(b.title)}</span>
+                        <span class="book-author">by ${escapeHTML(b.author)}</span>
+                        ${b.description ? `<span class="book-desc">${escapeHTML(b.description)}</span>` : ''}
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                            <span class="votes">👍 ${b.votes}</span>
+                            <button class="vote-btn" data-id="${b.id}" ${voted?'disabled':''}>Vote</button>
+                            ${b.isCurrent ? `<span class="current-badge">Current</span>` : ''}
+                            ${state.admin && !b.isCurrent ? `<button class="set-current-btn" data-id="${b.id}">Set as Current</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        sec.appendChild(list);
+        // Voting
+        setTimeout(() => {
+            list.querySelectorAll('.vote-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const id = btn.dataset.id;
+                    const idx = books.findIndex(b => b.id === id);
+                    if (idx >= 0 && localStorage.getItem('bc_voted_' + id) !== '1') {
+                        books[idx].votes++;
+                        Data.saveBooks(books);
+                        localStorage.setItem('bc_voted_' + id, '1');
+                        render();
+                    }
+                };
+            });
+            // Admin: Set as current
+            if (state.admin) {
+                list.querySelectorAll('.set-current-btn').forEach(btn => {
+                    btn.onclick = function() {
+                        const id = btn.dataset.id;
+                        books.forEach(b => b.isCurrent = false);
+                        const idx = books.findIndex(b => b.id === id);
+                        if (idx >= 0) books[idx].isCurrent = true;
+                        Data.saveBooks(books);
+                        render();
+                    };
+                });
+            }
+        }, 0);
+        // Add Book Form
+        const form = document.createElement('form');
+        form.className = 'add-form';
+        form.innerHTML = `
+            <input type="text" name="title" placeholder="Book Title" required>
+            <input type="text" name="author" placeholder="Author" required>
+            <textarea name="description" placeholder="Short Description (optional)"></textarea>
+            <button type="submit">Suggest Book</button>
+        `;
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            const fd = new FormData(form);
+            const title = fd.get('title').trim();
+            const author = fd.get('author').trim();
+            const description = fd.get('description').trim();
+            if (!title || !author) return;
+            books.push({
+                id: uuid(),
+                title, author, description,
+                votes: 1,
+                driveUrl: "",
+                isCurrent: false
+            });
+            Data.saveBooks(books);
+            // Auto-vote for own suggestion
+            localStorage.setItem('bc_voted_' + books[books.length-1].id, '1');
+            form.reset();
+            render();
+        };
+        sec.appendChild(form);
+        main.appendChild(sec);
+    }
+    // --- Reviews Tab ---
+    function renderReviews(main) {
+        const books = Data.getBooks();
+        const currentBook = getCurrentBook(books);
+        const reviews = Data.getReviews().filter(r => r.bookId === currentBook.id);
+        // Section: Add/Edit Review
+        const sec = document.createElement('section');
+        sec.innerHTML = `<h2>Reviews for "${escapeHTML(currentBook.title)}"</h2>`;
+        let myReview = reviews.find(r => r.userName === state.userName);
+        let isEditing = state.editingReviewId !== null;
+        const form = document.createElement('form');
+        form.className = 'review-form';
+        form.innerHTML = `
+            <input type="number" name="rating" min="1" max="5" placeholder="Rating (1-5)" required style="width:80px;" value="${isEditing && myReview ? myReview.rating : (myReview ? myReview.rating : '')}">
+            <textarea name="comment" placeholder="Your review..." required>${isEditing && myReview ? escapeHTML(myReview.comment) : (myReview ? escapeHTML(myReview.comment) : '')}</textarea>
+            <button type="submit">${isEditing ? 'Update' : (myReview ? 'Edit' : 'Post')} Review</button>
+            ${isEditing ? '<button type="button" id="cancelEditBtn">Cancel</button>' : ''}
+        `;
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            const fd = new FormData(form);
+            const rating = parseInt(fd.get('rating'));
+            const comment = fd.get('comment').trim();
+            if (!rating || rating < 1 || rating > 5 || !comment) return;
+            let allReviews = Data.getReviews();
+            if (isEditing && myReview) {
+                // Update
+                let idx = allReviews.findIndex(r => r.id === myReview.id);
+                if (idx >= 0) {
+                    allReviews[idx].rating = rating;
+                    allReviews[idx].comment = comment;
+                    allReviews[idx].date = nowLocale();
+                }
+                state.editingReviewId = null;
+            } else if (myReview) {
+                // Start editing
+                state.editingReviewId = myReview.id;
+                render();
+                return;
+            } else {
+                // New
+                allReviews.push({
+                    id: uuid(),
+                    bookId: currentBook.id,
+                    userName: state.userName,
+                    rating,
+                    comment,
+                    date: nowLocale()
+                });
+            }
+            Data.saveReviews(allReviews);
+            form.reset();
+            state.editingReviewId = null;
+            render();
+        };
+        sec.appendChild(form);
+        if (isEditing) {
+            setTimeout(() => {
+                document.getElementById('cancelEditBtn').onclick = function() {
+                    state.editingReviewId = null;
+                    render();
+                };
+            }, 0);
+        }
+        // Section: Review List
+        const list = document.createElement('div');
+        list.className = 'review-list';
+        if (reviews.length === 0) {
+            list.innerHTML = `<div class="no-data">No reviews yet. Be the first!</div>`;
+        } else {
+            sortByDateDesc(reviews, 'date').forEach(r => {
+                list.innerHTML += `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <span class="review-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+                            <span>${escapeHTML(r.userName)}</span>
+                            <span class="review-date">${escapeHTML(r.date)}</span>
+                        </div>
+                        <div>${escapeHTML(r.comment)}</div>
+                        ${r.userName === state.userName ? `
+                            <div class="review-actions">
+                                <button data-id="${r.id}" class="edit-review-btn">Edit</button>
+                                <button data-id="${r.id}" class="delete-review-btn">Delete</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+        sec.appendChild(list);
+        setTimeout(() => {
+            // Edit
+            list.querySelectorAll('.edit-review-btn').forEach(btn => {
+                btn.onclick = function() {
+                    state.editingReviewId = btn.dataset.id;
+                    render();
+                };
+            });
+            // Delete
+            list.querySelectorAll('.delete-review-btn').forEach(btn => {
+                btn.onclick = function() {
+                    if (confirm("Delete your review?")) {
+                        let allReviews = Data.getReviews();
+                        allReviews = allReviews.filter(r => r.id !== btn.dataset.id);
+                        Data.saveReviews(allReviews);
+                        state.editingReviewId = null;
+                        render();
+                    }
+                };
+            });
+        }, 0);
+        main.appendChild(sec);
+    }
+    // --- Schedule Tab ---
+    function renderSchedule(main) {
+        const books = Data.getBooks();
+        const currentBook = getCurrentBook(books);
+        const meetings = Data.getMeetings().filter(m => m.bookId === currentBook.id);
+        // Section: Meeting List
+        const sec = document.createElement('section');
+        sec.innerHTML = `<h2>Weekly Meeting Schedule</h2>`;
+        const list = document.createElement('div');
+        list.className = 'meeting-list';
+        if (meetings.length === 0) {
+            list.innerHTML = `<div class="no-data">No meetings scheduled yet.</div>`;
+        } else {
+            sortByDateDesc(meetings, 'date').reverse().forEach(m => {
+                list.innerHTML += `
+                    <div class="meeting-item">
+                        <div class="meeting-header">
+                            <span class="meeting-date">${escapeHTML(new Date(m.date + 'T' + m.time).toLocaleString())}</span>
+                        </div>
+                        <div class="meeting-link">
+                            <a href="${escapeHTML(m.link)}" target="_blank">${escapeHTML(m.link)}</a>
+                        </div>
+                        ${state.admin ? `
+                            <div class="meeting-actions">
+                                <button data-id="${m.id}" class="edit-meeting-btn">Edit</button>
+                                <button data-id="${m.id}" class="delete-meeting-btn">Delete</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+        sec.appendChild(list);
+        // Admin: Add/Edit Meeting
+        if (state.admin) {
+            const isEditing = state.editingMeetingId !== null;
+            let editMeeting = isEditing ? meetings.find(m => m.id === state.editingMeetingId) : null;
+            const form = document.createElement('form');
+            form.className = 'meeting-form';
+            form.innerHTML = `
+                <input type="date" name="date" required value="${editMeeting ? editMeeting.date : ''}">
+                <input type="time" name="time" required value="${editMeeting ? editMeeting.time : ''}">
+                <input type="url" name="link" required placeholder="Video Call URL" value="${editMeeting ? escapeHTML(editMeeting.link) : ''}">
+                <button type="submit">${isEditing ? 'Update' : 'Add'} Meeting</button>
+                ${isEditing ? '<button type="button" id="cancelMeetingEditBtn">Cancel</button>' : ''}
+            `;
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const fd = new FormData(form);
+                const date = fd.get('date');
+                const time = fd.get('time');
+                const link = fd.get('link').trim();
+                if (!date || !time || !link) return;
+                let allMeetings = Data.getMeetings();
+                if (isEditing && editMeeting) {
+                    let idx = allMeetings.findIndex(m => m.id === editMeeting.id);
+                    if (idx >= 0) {
+                        allMeetings[idx].date = date;
+                        allMeetings[idx].time = time;
+                        allMeetings[idx].link = link;
+                    }
+                    state.editingMeetingId = null;
+                } else {
+                    allMeetings.push({
+                        id: uuid(),
+                        bookId: currentBook.id,
+                        date, time, link
+                    });
+                }
+                Data.saveMeetings(allMeetings);
+                form.reset();
+                state.editingMeetingId = null;
+                render();
+            };
+            sec.appendChild(form);
+            setTimeout(() => {
+                if (isEditing) {
+                    document.getElementById('cancelMeetingEditBtn').onclick = function() {
+                        state.editingMeetingId = null;
+                        render();
+                    };
+                }
+            }, 0);
+            setTimeout(() => {
+                // Edit
+                list.querySelectorAll('.edit-meeting-btn').forEach(btn => {
+                    btn.onclick = function() {
+                        state.editingMeetingId = btn.dataset.id;
+                        render();
+                    };
+                });
+                // Delete
+                list.querySelectorAll('.delete-meeting-btn').forEach(btn => {
+                    btn.onclick = function() {
+                        if (confirm("Delete this meeting?")) {
+                            let allMeetings = Data.getMeetings();
+                            allMeetings = allMeetings.filter(m => m.id !== btn.dataset.id);
+                            Data.saveMeetings(allMeetings);
+                            state.editingMeetingId = null;
+                            render();
+                        }
+                    };
+                });
+            }, 0);
+        }
+        main.appendChild(sec);
+    }
+    // --- Navigation ---
+    document.querySelectorAll('nav button[data-tab]').forEach(btn => {
+        btn.onclick = function() {
+            state.tab = btn.dataset.tab;
+            state.editingReviewId = null;
+            state.editingMeetingId = null;
+            render();
+        };
+    });
+    // --- Admin Toggle ---
+    document.getElementById('adminToggleBtn').onclick = function() {
+        state.admin = !state.admin;
+        render();
+    };
+    // --- Initial Load ---
+    seedDemoData();
+    render();
+})();
+</script>
+</body>
+</html>
